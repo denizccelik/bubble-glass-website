@@ -1,12 +1,1419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Glass — Circular Blue Material Traceability</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --deep:    #051929;
+      --ocean:   #0a3d62;
+      --lagoon:  #1a6fa8;
+      --sky:     #4fb3e8;
+      --foam:    #c8e8f7;
+      --white:   #f7fbfe;
+      --accent:  #72d4f0;
+      --gold:    #b8a88a;
+      --muted:   #6a8fa8;
+
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'DM Sans', sans-serif;
+
+      --section-pad: clamp(80px, 10vw, 140px);
+      --container:   1160px;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--deep);
+      color: var(--white);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ─────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--deep); }
+    ::-webkit-scrollbar-thumb { background: var(--lagoon); border-radius: 2px; }
+
+    /* ─── NAV ────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 48px;
+      transition: background 0.5s, padding 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(5, 25, 41, 0.88);
+      backdrop-filter: blur(14px);
+      padding: 16px 48px;
+      border-bottom: 1px solid rgba(79, 179, 232, 0.12);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.92;
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--foam);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .nav-links a:hover { opacity: 1; }
+
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .nav-toggle span {
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--white);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* ─── HERO ───────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* layered gradient atmosphere */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 30% 40%, rgba(26, 111, 168, 0.35) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 70% 60%, rgba(10, 61, 98, 0.55) 0%, transparent 65%),
+        radial-gradient(ellipse 100% 100% at 50% 100%, rgba(5, 25, 41, 0.9) 0%, transparent 55%),
+        linear-gradient(160deg, #051929 0%, #0a3d62 45%, #0d4f80 75%, #051929 100%);
+      z-index: 0;
+    }
+
+    /* animated ripple rings */
+    .ripples {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(79, 179, 232, 0.18);
+      animation: ripple-expand 8s ease-out infinite;
+    }
+    .ripple:nth-child(1) { width: 300px; height: 300px; top: 20%; left: 15%; animation-delay: 0s; }
+    .ripple:nth-child(2) { width: 500px; height: 500px; top: 10%; left: 5%;  animation-delay: 2s; }
+    .ripple:nth-child(3) { width: 700px; height: 700px; top: 0%;  left: -5%; animation-delay: 4s; }
+    .ripple:nth-child(4) { width: 250px; height: 250px; top: 55%; left: 65%; animation-delay: 1s; }
+    .ripple:nth-child(5) { width: 420px; height: 420px; top: 45%; left: 55%; animation-delay: 3s; }
+    .ripple:nth-child(6) { width: 600px; height: 600px; top: 35%; left: 45%; animation-delay: 5s; }
+
+    @keyframes ripple-expand {
+      0%   { transform: scale(0.6); opacity: 0.6; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    /* floating glass orbs */
+    .orbs {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(114, 212, 240, 0.25), rgba(26, 111, 168, 0.08));
+      border: 1px solid rgba(114, 212, 240, 0.2);
+      backdrop-filter: blur(2px);
+      animation: float-orb linear infinite;
+    }
+    .orb:nth-child(1) { width: 80px;  height: 80px;  top: 20%; left: 75%; animation-duration: 18s; animation-delay: 0s; }
+    .orb:nth-child(2) { width: 44px;  height: 44px;  top: 60%; left: 80%; animation-duration: 13s; animation-delay: 3s; }
+    .orb:nth-child(3) { width: 120px; height: 120px; top: 70%; left: 20%; animation-duration: 22s; animation-delay: 1s; }
+    .orb:nth-child(4) { width: 30px;  height: 30px;  top: 35%; left: 55%; animation-duration: 10s; animation-delay: 5s; }
+    .orb:nth-child(5) { width: 60px;  height: 60px;  top: 80%; left: 50%; animation-duration: 16s; animation-delay: 2s; }
+
+    @keyframes float-orb {
+      0%   { transform: translateY(0px) rotate(0deg); }
+      33%  { transform: translateY(-22px) rotate(5deg); }
+      66%  { transform: translateY(10px) rotate(-3deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 48px;
+      padding-top: 100px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(114, 212, 240, 0.35);
+      padding: 6px 18px;
+      border-radius: 100px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fade-up 1s ease 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: var(--serif);
+      font-size: clamp(4rem, 10vw, 9.5rem);
+      font-weight: 300;
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fade-up 1s ease 0.5s forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--sky);
+    }
+
+    .hero-subtitle {
+      font-family: var(--serif);
+      font-size: clamp(1.1rem, 2.5vw, 1.75rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--foam);
+      letter-spacing: 0.04em;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fade-up 1s ease 0.7s forwards;
+    }
+
+    .hero-desc {
+      max-width: 520px;
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: rgba(200, 232, 247, 0.75);
+      line-height: 1.8;
+      margin-bottom: 52px;
+      opacity: 0;
+      animation: fade-up 1s ease 0.9s forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fade-up 1s ease 1.1s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--lagoon);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      border-radius: 100px;
+      border: 1px solid rgba(114, 212, 240, 0.25);
+      transition: background 0.35s, transform 0.3s, box-shadow 0.35s;
+    }
+    .btn-primary:hover {
+      background: var(--sky);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(79, 179, 232, 0.28);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--foam);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      border-radius: 100px;
+      border: 1px solid rgba(200, 232, 247, 0.2);
+      transition: border-color 0.35s, color 0.35s, transform 0.3s;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(200, 232, 247, 0.55);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fade-in 1s ease 1.6s forwards;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--muted), transparent);
+      animation: scroll-pulse 2s ease-in-out infinite;
+    }
+    @keyframes scroll-pulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.15); }
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── CONTAINER ──────────────────────────────────────── */
+    .container {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* ─── SECTION BASE ───────────────────────────────────── */
+    section {
+      padding: var(--section-pad) 0;
+      position: relative;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 5vw, 4.2rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      margin-bottom: 28px;
+    }
+    .section-title em { font-style: italic; color: var(--sky); }
+
+    .section-body {
+      font-size: 1.02rem;
+      color: rgba(200, 232, 247, 0.72);
+      line-height: 1.85;
+      max-width: 600px;
+    }
+
+    /* ─── DIVIDER ────────────────────────────────────────── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(79, 179, 232, 0.15), transparent);
+    }
+
+    /* ─── VISION ─────────────────────────────────────────── */
+    #vision {
+      background:
+        radial-gradient(ellipse 70% 60% at 80% 50%, rgba(26, 111, 168, 0.12) 0%, transparent 70%);
+    }
+    .vision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .vision-stat-block {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .vision-stat {
+      border-left: 1px solid rgba(79, 179, 232, 0.25);
+      padding-left: 28px;
+    }
+    .vision-stat-num {
+      font-family: var(--serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: var(--sky);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .vision-stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ─── PROBLEM ────────────────────────────────────────── */
+    #problem {
+      background: rgba(5, 25, 41, 0.6);
+    }
+    .problem-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 64px;
+      border: 1px solid rgba(79, 179, 232, 0.1);
+    }
+    .problem-card {
+      padding: 44px 36px;
+      background: rgba(10, 61, 98, 0.12);
+      border: 1px solid rgba(79, 179, 232, 0.08);
+      transition: background 0.4s;
+    }
+    .problem-card:hover { background: rgba(26, 111, 168, 0.14); }
+    .problem-icon {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .problem-card h3 {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .problem-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* ─── SOLUTION ───────────────────────────────────────── */
+    #solution {
+      background:
+        radial-gradient(ellipse 80% 70% at 20% 60%, rgba(26, 111, 168, 0.14) 0%, transparent 70%);
+    }
+    .solution-layout {
+      display: grid;
+      grid-template-columns: 5fr 4fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .solution-visual {
+      aspect-ratio: 1;
+      max-width: 420px;
+      position: relative;
+    }
+    .glass-diagram {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .cycle-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px dashed rgba(79, 179, 232, 0.2);
+      animation: spin-slow linear infinite;
+    }
+    .cycle-ring:nth-child(1) { animation-duration: 30s; }
+    .cycle-ring:nth-child(2) { inset: 12%; animation-duration: 22s; animation-direction: reverse; border-color: rgba(114, 212, 240, 0.15); }
+    .cycle-ring:nth-child(3) { inset: 24%; animation-duration: 16s; border-color: rgba(184, 168, 138, 0.15); }
+    .cycle-center {
+      position: absolute;
+      inset: 35%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,111,168,0.4), rgba(5,25,41,0.2));
+      border: 1px solid rgba(79, 179, 232, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--sky);
+      text-align: center;
+    }
+    .cycle-node {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: translate(-50%, -50%);
+    }
+    .cycle-node::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 50%;
+      left: 18px;
+      transform: translateY(-50%);
+      font-size: 0.65rem;
+      color: var(--foam);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .solution-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      margin-top: 36px;
+    }
+    .solution-steps li {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      color: rgba(79, 179, 232, 0.35);
+      line-height: 1;
+      min-width: 32px;
+    }
+    .step-text strong {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--foam);
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+    .step-text span {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ─── WHAT WE BUILD ──────────────────────────────────── */
+    #build {
+      background: rgba(5, 25, 41, 0.5);
+    }
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 64px;
+    }
+    .build-card {
+      padding: 40px 32px 36px;
+      border: 1px solid rgba(79, 179, 232, 0.1);
+      border-radius: 2px;
+      background: rgba(10, 61, 98, 0.08);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.4s, transform 0.4s;
+    }
+    .build-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .build-card:hover { border-color: rgba(79, 179, 232, 0.28); transform: translateY(-4px); }
+    .build-card:hover::before { opacity: 1; }
+    .build-num {
+      font-family: var(--serif);
+      font-size: 4rem;
+      font-weight: 300;
+      color: rgba(79, 179, 232, 0.08);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    .build-card h3 {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 14px;
+    }
+    .build-card p {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* ─── VENICE ─────────────────────────────────────────── */
+    #venice {
+      background:
+        radial-gradient(ellipse 60% 80% at 80% 40%, rgba(10, 61, 98, 0.3) 0%, transparent 65%);
+    }
+    .venice-layout {
+      display: grid;
+      grid-template-columns: 4fr 5fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .venice-quote {
+      font-family: var(--serif);
+      font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--foam);
+      line-height: 1.4;
+      border-left: 2px solid var(--accent);
+      padding-left: 32px;
+    }
+    .venice-facts {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .venice-fact {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .venice-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 9px;
+      flex-shrink: 0;
+    }
+    .venice-fact p {
+      font-size: 0.92rem;
+      color: rgba(200, 232, 247, 0.72);
+      line-height: 1.7;
+    }
+
+    /* ─── INNOVATION ─────────────────────────────────────── */
+    #innovation {
+      background: rgba(5, 25, 41, 0.4);
+    }
+    .innovation-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      border: 1px solid rgba(79, 179, 232, 0.1);
+      margin-top: 64px;
+    }
+    .innovation-item {
+      padding: 44px 36px;
+      background: rgba(10, 61, 98, 0.06);
+      border-right: 1px solid rgba(79, 179, 232, 0.1);
+      transition: background 0.4s;
+    }
+    .innovation-item:last-child { border-right: none; }
+    .innovation-item:hover { background: rgba(26, 111, 168, 0.1); }
+    .innov-icon { font-size: 1.6rem; margin-bottom: 18px; display: block; }
+    .innovation-item h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .innovation-item p {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* ─── IMPACT ─────────────────────────────────────────── */
+    #impact {
+      background:
+        radial-gradient(ellipse 70% 60% at 30% 50%, rgba(26, 111, 168, 0.12) 0%, transparent 65%);
+    }
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 64px;
+    }
+    .impact-card {
+      padding: 36px 28px;
+      border-radius: 2px;
+      border: 1px solid rgba(79, 179, 232, 0.1);
+      background: rgba(10, 61, 98, 0.1);
+    }
+    .impact-tag {
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .tag-env  { background: rgba(114, 212, 240, 0.12); color: var(--accent); }
+    .tag-cult { background: rgba(184, 168, 138, 0.12); color: var(--gold); }
+    .tag-econ { background: rgba(79, 179, 232, 0.12);  color: var(--sky); }
+    .impact-card h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .impact-card p {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* ─── SCALABILITY ────────────────────────────────────── */
+    #scalability {
+      background: rgba(5, 25, 41, 0.5);
+    }
+    .scale-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .scale-cities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 36px;
+    }
+    .city-pill {
+      padding: 8px 20px;
+      border: 1px solid rgba(79, 179, 232, 0.18);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      color: var(--foam);
+      letter-spacing: 0.08em;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .city-pill:hover, .city-pill.active {
+      background: rgba(79, 179, 232, 0.12);
+      border-color: rgba(79, 179, 232, 0.4);
+    }
+    .city-pill.active { color: var(--accent); }
+    .scale-phase {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .phase-item {
+      display: flex;
+      gap: 20px;
+    }
+    .phase-badge {
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--accent);
+      background: rgba(79, 179, 232, 0.08);
+      border: 1px solid rgba(79, 179, 232, 0.18);
+      border-radius: 4px;
+      padding: 6px 12px;
+      white-space: nowrap;
+      height: fit-content;
+    }
+    .phase-desc strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--foam);
+      margin-bottom: 4px;
+    }
+    .phase-desc span {
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    /* ─── TEAM ───────────────────────────────────────────── */
+    #team {
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 40%, rgba(26, 111, 168, 0.1) 0%, transparent 70%);
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 28px;
+      margin-top: 64px;
+    }
+    .team-card {
+      padding: 32px 24px;
+      border: 1px solid rgba(79, 179, 232, 0.1);
+      border-radius: 2px;
+      background: rgba(10, 61, 98, 0.08);
+      text-align: center;
+      transition: border-color 0.4s;
+    }
+    .team-card:hover { border-color: rgba(79, 179, 232, 0.3); }
+    .team-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(26, 111, 168, 0.4), rgba(79, 179, 232, 0.15));
+      border: 1px solid rgba(79, 179, 232, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      color: var(--sky);
+      margin: 0 auto 20px;
+    }
+    .team-name {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .team-role {
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .team-bio {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .founder-badge {
+      display: inline-block;
+      background: rgba(184, 168, 138, 0.15);
+      border: 1px solid rgba(184, 168, 138, 0.25);
+      color: var(--gold);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 8px;
+    }
+
+    /* ─── CONTACT ────────────────────────────────────────── */
+    #contact {
+      background: rgba(5, 25, 41, 0.7);
+      text-align: center;
+    }
+    .contact-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .contact-email {
+      display: inline-block;
+      font-family: var(--serif);
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-style: italic;
+      color: var(--sky);
+      text-decoration: none;
+      margin: 36px 0 16px;
+      transition: color 0.3s;
+      border-bottom: 1px solid rgba(79, 179, 232, 0.3);
+      padding-bottom: 4px;
+    }
+    .contact-email:hover { color: var(--accent); border-color: var(--accent); }
+    .contact-location {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 60px;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    footer {
+      padding: 28px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(79, 179, 232, 0.08);
+      font-size: 0.72rem;
+      color: rgba(106, 143, 168, 0.55);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── SCROLL REVEAL ──────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.45s; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(5, 25, 41, 0.97);
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        z-index: 99;
+      }
+      .nav-links.open a { font-size: 1.1rem; }
+      .container { padding: 0 24px; }
+      .hero-content { padding: 0 24px; padding-top: 100px; }
+      .vision-grid,
+      .solution-layout,
+      .venice-layout,
+      .scale-layout { grid-template-columns: 1fr; gap: 48px; }
+      .problem-cards,
+      .build-grid,
+      .innovation-row,
+      .impact-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; gap: 10px; text-align: center; }
+    }
+
+    @media (max-width: 540px) {
+      .team-grid { grid-template-columns: 1fr; }
+      .hero-cta { flex-direction: column; }
+      .btn-primary, .btn-ghost { text-align: center; justify-content: center; }
+    }
+  </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bubble Glass Website</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="#hero" class="nav-logo">Bubble Glass</a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#vision" onclick="closeMenu()">Vision</a></li>
+      <li><a href="#solution" onclick="closeMenu()">Solution</a></li>
+      <li><a href="#venice" onclick="closeMenu()">Venice</a></li>
+      <li><a href="#impact" onclick="closeMenu()">Impact</a></li>
+      <li><a href="#team" onclick="closeMenu()">Team</a></li>
+      <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="ripples">
+      <div class="ripple"></div><div class="ripple"></div><div class="ripple"></div>
+      <div class="ripple"></div><div class="ripple"></div><div class="ripple"></div>
+    </div>
+    <div class="orbs">
+      <div class="orb"></div><div class="orb"></div><div class="orb"></div>
+      <div class="orb"></div><div class="orb"></div>
+    </div>
+    <div class="hero-content">
+      <span class="hero-tag">Venice — Blue Economy — Circular Materials</span>
+      <h1 class="hero-title">Bubble<br><em>Glass</em></h1>
+      <p class="hero-subtitle">Circular Blue Material Traceability</p>
+      <p class="hero-desc">
+        A circular material system born in Venice that transforms glass waste
+        into traceable, reusable materials — designed for water-based and
+        coastal environments where industry meets ecology.
+      </p>
+      <div class="hero-cta">
+        <a href="#vision" class="btn-primary">Explore the Vision</a>
+        <a href="#contact" class="btn-ghost">Get in Touch</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- VISION -->
+  <section id="vision">
+    <div class="container">
+      <div class="divider" style="margin-bottom: var(--section-pad)"></div>
+      <div class="vision-grid">
+        <div class="reveal">
+          <div class="section-label">Our Vision</div>
+          <h2 class="section-title">Rethinking<br>Glass for<br>a <em>Blue</em> World</h2>
+          <p class="section-body">
+            We envision a future where glass — one of humanity's oldest materials — becomes
+            the foundation of a fully circular, traceable supply chain for coastal and
+            water-based environments. By closing the loop on glass production, we eliminate
+            waste streams and create regenerative material flows that protect marine ecosystems
+            while enabling a new generation of blue economy products.
+          </p>
+        </div>
+        <div class="vision-stat-block reveal reveal-delay-2">
+          <div class="vision-stat">
+            <div class="vision-stat-num">80%</div>
+            <div class="vision-stat-label">of glass waste is never recycled in coastal cities</div>
+          </div>
+          <div class="vision-stat">
+            <div class="vision-stat-num">∞</div>
+            <div class="vision-stat-label">Times glass can be recycled without quality loss</div>
+          </div>
+          <div class="vision-stat">
+            <div class="vision-stat-num">30%</div>
+            <div class="vision-stat-label">Energy savings versus virgin glass production</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">The Challenge</div>
+        <h2 class="section-title">A System<br>Built to <em>Waste</em></h2>
+      </div>
+      <div class="problem-cards">
+        <div class="problem-card reveal reveal-delay-1">
+          <span class="problem-icon">🌊</span>
+          <h3>Uncontrolled Waste Streams</h3>
+          <p>Glass waste from coastal industries — fisheries, hospitality, naval — enters the environment with no tracking, no recovery, and no circularity. It accumulates in lagoons and seabeds with no infrastructure to recover it.</p>
+        </div>
+        <div class="problem-card reveal reveal-delay-2">
+          <span class="problem-icon">🔥</span>
+          <h3>Energy & Water Intensive Processes</h3>
+          <p>Conventional glass manufacturing is among the most energy-intensive industrial processes. High-temperature furnaces, excessive water consumption, and carbon-heavy logistics compound environmental costs across the entire chain.</p>
+        </div>
+        <div class="problem-card reveal reveal-delay-3">
+          <span class="problem-icon">⭕</span>
+          <h3>No Circular Models for Water Ecosystems</h3>
+          <p>Current recycling frameworks were built for land-based economies. Coastal and water-based environments lack dedicated circular models, traceability systems, or design standards for glass-derived materials that function in aquatic contexts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLUTION -->
+  <section id="solution">
+    <div class="container">
+      <div class="solution-layout">
+        <div class="reveal">
+          <div class="section-label">Our Approach</div>
+          <h2 class="section-title">A Circular<br>Glass Material<br><em>System</em></h2>
+          <p class="section-body">
+            Bubble Glass designs a closed-loop material system that collects, processes,
+            traces, and reintroduces glass waste as premium circular materials.
+            Each fragment becomes a resource — tracked from origin to application.
+          </p>
+          <ol class="solution-steps">
+            <li>
+              <span class="step-num">01</span>
+              <div class="step-text">
+                <strong>Collection & Sorting</strong>
+                <span>Glass waste is gathered from coastal and water-adjacent sources with full provenance logging.</span>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">02</span>
+              <div class="step-text">
+                <strong>Low-Energy Processing</strong>
+                <span>Proprietary cold-processing and reduced-temperature methods minimize energy demand.</span>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">03</span>
+              <div class="step-text">
+                <strong>Material Traceability</strong>
+                <span>Each material batch is digitally tagged, enabling full lifecycle transparency from source to application.</span>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">04</span>
+              <div class="step-text">
+                <strong>Circular Reintroduction</strong>
+                <span>Processed glass re-enters the economy as certified modular components for architecture, design, and infrastructure.</span>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div class="solution-visual reveal reveal-delay-2">
+          <div class="glass-diagram">
+            <div class="cycle-ring"></div>
+            <div class="cycle-ring"></div>
+            <div class="cycle-ring"></div>
+            <div class="cycle-center">Closed<br>Loop</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT WE BUILD -->
+  <section id="build">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">What We Build</div>
+        <h2 class="section-title">Materials,<br>Components &amp; <em>Applications</em></h2>
+      </div>
+      <div class="build-grid">
+        <div class="build-card reveal reveal-delay-1">
+          <div class="build-num">01</div>
+          <h3>New Glass-Based Materials</h3>
+          <p>Innovative material formulations derived from recycled coastal glass — engineered for durability, water resistance, and aesthetic quality. From aggregates to solid panels, each material is optimized for blue economy use cases.</p>
+        </div>
+        <div class="build-card reveal reveal-delay-2">
+          <div class="build-num">02</div>
+          <h3>Modular Components</h3>
+          <p>A system of interlocking, standardized glass-derived components designed for ease of assembly, disassembly, and reuse. Modular logic enables adaptation across diverse applications without custom fabrication waste.</p>
+        </div>
+        <div class="build-card reveal reveal-delay-3">
+          <div class="build-num">03</div>
+          <h3>Architecture Applications</h3>
+          <p>From urban coastal infrastructure to marine-exposed architectural surfaces — our materials perform where conventional glass fails. Designed for Venice, tested for the world's most demanding water environments.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VENICE -->
+  <section id="venice">
+    <div class="container">
+      <div class="venice-layout">
+        <div class="reveal">
+          <div class="section-label">Why Venice</div>
+          <blockquote class="venice-quote">
+            "Venice is the world's most urgent laboratory for the intersection
+            of water, material culture, and circular economy."
+          </blockquote>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <h2 class="section-title" style="font-size: clamp(1.8rem, 3.5vw, 3rem); margin-bottom: 32px;">
+            A City as a <em>Pilot</em>
+          </h2>
+          <div class="venice-facts">
+            <div class="venice-fact">
+              <div class="venice-dot"></div>
+              <p>Venice has a millennia-old relationship with glass craftsmanship — from Murano's furnaces to modern industrial production — creating both a rich material heritage and a significant waste legacy.</p>
+            </div>
+            <div class="venice-fact">
+              <div class="venice-dot"></div>
+              <p>As a lagoon city under constant climate pressure, Venice faces the most acute version of the challenges coastal cities worldwide will encounter within decades, making it the ideal first test case.</p>
+            </div>
+            <div class="venice-fact">
+              <div class="venice-dot"></div>
+              <p>Venice's unique governance structure, dense creative economy, and established design culture create the conditions for rapid prototyping and community-embedded material innovation.</p>
+            </div>
+            <div class="venice-fact">
+              <div class="venice-dot"></div>
+              <p>Success in Venice becomes a replicable model for coastal cities from Amsterdam to Osaka — cities where water, waste, and design intersect in urgent and scalable ways.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INNOVATION -->
+  <section id="innovation">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Innovation</div>
+        <h2 class="section-title">Where We Push<br>the <em>Boundary</em></h2>
+      </div>
+      <div class="innovation-row">
+        <div class="innovation-item reveal reveal-delay-1">
+          <span class="innov-icon">🧪</span>
+          <h3>Material Innovation</h3>
+          <p>We develop glass composite materials engineered for water-based environments — combining structural performance, aesthetic refinement, and circular material logic. New formulations. New use cases. Same ancient material.</p>
+        </div>
+        <div class="innovation-item reveal reveal-delay-2">
+          <span class="innov-icon">📡</span>
+          <h3>Waste Traceability</h3>
+          <p>A digital traceability layer assigns provenance data to every material batch — from collection point to finished component. This enables certification, accountability, and material passports for the circular economy.</p>
+        </div>
+        <div class="innovation-item reveal reveal-delay-3">
+          <span class="innov-icon">💧</span>
+          <h3>Reduced Water & Energy</h3>
+          <p>Low-temperature processing routes and water-efficient production methods drastically cut the resource footprint of glass transformation — proving that circular doesn't mean compromised.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPACT -->
+  <section id="impact">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Impact</div>
+        <h2 class="section-title">Built to<br>Matter <em>Beyond</em><br>the Product</h2>
+      </div>
+      <div class="impact-grid">
+        <div class="impact-card reveal reveal-delay-1">
+          <span class="impact-tag tag-env">Environmental</span>
+          <h3>Protecting Coastal Ecosystems</h3>
+          <p>By diverting glass waste from landfills and waterways, Bubble Glass directly reduces marine contamination. Circular processes lower carbon emissions and cut industrial water consumption across the production chain.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-2">
+          <span class="impact-tag tag-cult">Cultural</span>
+          <h3>Preserving Material Heritage</h3>
+          <p>Venice's glass tradition is a living cultural heritage. By reframing it through circular principles, we ensure this craft legacy continues — not as nostalgia, but as relevant contemporary practice with global meaning.</p>
+        </div>
+        <div class="impact-card reveal reveal-delay-3">
+          <span class="impact-tag tag-econ">Economic</span>
+          <h3>New Value Chains for Coastal Cities</h3>
+          <p>Circular glass materials create new categories of traceable, premium products — supporting local industries, attracting blue economy investment, and generating models exportable to coastal economies worldwide.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCALABILITY -->
+  <section id="scalability">
+    <div class="container">
+      <div class="scale-layout">
+        <div class="reveal">
+          <div class="section-label">Scalability</div>
+          <h2 class="section-title">From<br>Venice to<br><em>Every Coast</em></h2>
+          <p class="section-body">
+            The Bubble Glass system is designed for replication. Once proven in Venice,
+            the model expands to coastal cities sharing similar pressures: marine waste,
+            industrial glass use, and urgent need for circular infrastructure.
+          </p>
+          <div class="scale-cities">
+            <span class="city-pill active">Venice ●</span>
+            <span class="city-pill">Amsterdam</span>
+            <span class="city-pill">Lisbon</span>
+            <span class="city-pill">Barcelona</span>
+            <span class="city-pill">Osaka</span>
+            <span class="city-pill">Miami</span>
+            <span class="city-pill">Dubai</span>
+            <span class="city-pill">Sydney</span>
+          </div>
+        </div>
+        <div class="scale-phase reveal reveal-delay-2">
+          <div class="phase-item">
+            <div class="phase-badge">Phase I</div>
+            <div class="phase-desc">
+              <strong>Venice Pilot (2024–2026)</strong>
+              <span>Collection system, material R&D, traceability protocol, and first architecture applications in the Venetian lagoon context.</span>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="phase-badge">Phase II</div>
+            <div class="phase-desc">
+              <strong>Mediterranean Expansion (2026–2028)</strong>
+              <span>Replication of the model in 3–5 Southern European coastal cities, adapting the traceability framework to local waste streams.</span>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="phase-badge">Phase III</div>
+            <div class="phase-desc">
+              <strong>Global Blue Economy Network (2028+)</strong>
+              <span>An open standard for circular coastal glass materials — licensing the model, certifying partners, and building a global material passport ecosystem.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="team">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">The Team</div>
+        <h2 class="section-title">People Behind<br>the <em>Glass</em></h2>
+      </div>
+      <div class="team-grid">
+        <div class="team-card reveal reveal-delay-1">
+          <div class="team-avatar">F</div>
+          <div class="founder-badge">Founder</div>
+          <div class="team-name">Francesca Babolin</div>
+          <div class="team-role">Founder</div>
+          <p class="team-bio">Founder with a background in fashion, design, and independent glass production. Direct experience with Murano glass, creative industries, and material storytelling.</p>
+        </div>
+        <div class="team-card reveal reveal-delay-2">
+          <div class="team-avatar">L</div>
+          <div class="team-name">Luca Moretto</div>
+          <div class="team-role">Operation & Supply ChainLead</div>
+          <p class="team-bio">Luca holds a degree in Economics and Management and completed an Erasmus program in Business Administration, with a focus on strategic management and corporate social responsibility.</p>
+        </div>
+        <div class="team-card reveal reveal-delay-3">
+          <div class="team-avatar">A</div>
+          <div class="team-name">Alessandro Viano</div>
+          <div class="team-role">Advisor</div>
+          <p class="team-bio">Executive in Global Company</p>
+        </div>
+        <div class="team-card reveal reveal-delay-4">
+          <div class="team-avatar">F</div>
+          <div class="team-name">Fabio Prizzon</div>
+          <div class="team-role">Advisor</div>
+          <p class="team-bio">Founder of Fabio Prizzon</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-inner reveal">
+        <div class="section-label" style="justify-content: center;">Contact</div>
+        <h2 class="section-title" style="font-size: clamp(2rem, 4.5vw, 3.8rem);">
+          Let's Build<br>the <em>Blue Economy</em><br>Together
+        </h2>
+        <p class="section-body" style="margin: 0 auto 8px; text-align: center; max-width: 480px;">
+          We're looking for partners, investors, and collaborators who share our vision
+          for circular coastal materials.
+        </p>
+        <a href="mailto:hello@bubbleglass.io" class="contact-email">hello@bubbleglass.io</a>
+        <div class="contact-location">
+          <span>📍</span>
+          <span>Venice, Italy — Laguna di Venezia</span>
+        </div>
+        <a href="mailto:hello@bubbleglass.io" class="btn-primary" style="margin: 0 auto;">
+          Start a Conversation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2026 Bubble Glass — Circular Blue Material Traceability</span>
+    <span>Born in Venice · Designed for the World</span>
+  </footer>
+
+  <script>
+    // NAV SCROLL
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // MOBILE MENU
+    const toggle = document.getElementById('nav-toggle');
+    const links  = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+      links.classList.toggle('open');
+    });
+    function closeMenu() {
+      links.classList.remove('open');
+    }
+
+    // SCROLL REVEAL
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+
+    // SMOOTH ANCHOR SCROLL (backup for older browsers)
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+
     <header>
         <h1>Welcome to Bubble Glass</h1>
     </header>
